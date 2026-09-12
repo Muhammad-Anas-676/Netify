@@ -1,6 +1,7 @@
 package com.netpulse.android.core
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -19,11 +20,12 @@ class SpeedTestEngine(private val client: HttpClient) {
 
     suspend fun measurePingMs(samples: Int = 4): Double? = withContext(Dispatchers.IO) {
         val times = mutableListOf<Double>()
-        repeat(samples) {
+        repeat(samples) { sampleIndex ->
             val start = System.currentTimeMillis()
+            val cacheBuster = System.nanoTime().toString() + "-" + sampleIndex
             try {
                 client.get(pingUrl) {
-                    url { parameters.append("_", (start + it).toString()) }
+                    url { parameters.append("_", cacheBuster) }
                 }
                 times.add((System.currentTimeMillis() - start).toDouble())
             } catch (_: Exception) { /* skip a failed sample */ }
@@ -36,10 +38,11 @@ class SpeedTestEngine(private val client: HttpClient) {
         val start = System.currentTimeMillis()
         while (System.currentTimeMillis() - start < durationMs) {
             try {
-                val response = client.get(downloadUrl) {
-                    url { parameters.append("_", System.currentTimeMillis().toString()) }
+                val response: HttpResponse = client.get(downloadUrl) {
+                    url { parameters.append("_", System.nanoTime().toString()) }
                 }
-                totalBytes += response.bodyAsBytes().size
+                val bytes: ByteArray = response.body()
+                totalBytes += bytes.size
             } catch (_: Exception) { break }
         }
         val elapsedSec = (System.currentTimeMillis() - start) / 1000.0
