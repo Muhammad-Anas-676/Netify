@@ -1,4 +1,4 @@
-package com.netpulse.shared
+package com.netpulse.android.core
 
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -8,9 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Real network speed test — same approach as the HTML prototype
- * (timed HTTP transfers against public endpoints), just running as
- * native code on Android/iOS instead of browser fetch calls.
+ * Real network speed test — timed HTTP transfers against public endpoints,
+ * same approach as the HTML prototype, running natively here.
  */
 class SpeedTestEngine(private val client: HttpClient) {
 
@@ -18,41 +17,41 @@ class SpeedTestEngine(private val client: HttpClient) {
     private val pingUrl = "https://httpbin.org/get"
     private val uploadUrl = "https://httpbin.org/post"
 
-    suspend fun measurePingMs(samples: Int = 4): Double? = withContext(Dispatchers.Default) {
+    suspend fun measurePingMs(samples: Int = 4): Double? = withContext(Dispatchers.IO) {
         val times = mutableListOf<Double>()
         repeat(samples) {
-            val start = nowMs()
+            val start = System.currentTimeMillis()
             try {
                 client.get(pingUrl) {
                     url { parameters.append("_", (start + it).toString()) }
                 }
-                times.add((nowMs() - start).toDouble())
+                times.add((System.currentTimeMillis() - start).toDouble())
             } catch (_: Exception) { /* skip a failed sample */ }
         }
         if (times.isEmpty()) null else times.average()
     }
 
-    suspend fun measureDownloadMbps(durationMs: Long = 3500): Double? = withContext(Dispatchers.Default) {
+    suspend fun measureDownloadMbps(durationMs: Long = 3500): Double? = withContext(Dispatchers.IO) {
         var totalBytes = 0L
-        val start = nowMs()
-        while (nowMs() - start < durationMs) {
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < durationMs) {
             try {
                 val response = client.get(downloadUrl) {
-                    url { parameters.append("_", nowMs().toString()) }
+                    url { parameters.append("_", System.currentTimeMillis().toString()) }
                 }
                 totalBytes += response.bodyAsBytes().size
             } catch (_: Exception) { break }
         }
-        val elapsedSec = (nowMs() - start) / 1000.0
+        val elapsedSec = (System.currentTimeMillis() - start) / 1000.0
         if (totalBytes == 0L || elapsedSec == 0.0) null
         else (totalBytes * 8) / elapsedSec / 1_000_000.0
     }
 
-    suspend fun measureUploadMbps(durationMs: Long = 2500): Double? = withContext(Dispatchers.Default) {
-        val payload = ByteArray(256 * 1024) // 256KB chunk, same as the prototype
+    suspend fun measureUploadMbps(durationMs: Long = 2500): Double? = withContext(Dispatchers.IO) {
+        val payload = ByteArray(256 * 1024)
         var totalBytes = 0L
-        val start = nowMs()
-        while (nowMs() - start < durationMs) {
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < durationMs) {
             try {
                 client.post(uploadUrl) {
                     setBody(payload)
@@ -61,12 +60,11 @@ class SpeedTestEngine(private val client: HttpClient) {
                 totalBytes += payload.size
             } catch (_: Exception) { break }
         }
-        val elapsedSec = (nowMs() - start) / 1000.0
+        val elapsedSec = (System.currentTimeMillis() - start) / 1000.0
         if (totalBytes == 0L || elapsedSec == 0.0) null
         else (totalBytes * 8) / elapsedSec / 1_000_000.0
     }
 
-    /** Runs ping → download → upload in sequence and returns a full result, or null if any step failed. */
     suspend fun runFullTest(): SpeedResult? {
         val ping = measurePingMs() ?: return null
         val down = measureDownloadMbps() ?: return null
@@ -75,9 +73,7 @@ class SpeedTestEngine(private val client: HttpClient) {
             downloadMbps = down,
             uploadMbps = up,
             pingMs = ping,
-            timestampEpochMs = nowMs()
+            timestampEpochMs = System.currentTimeMillis()
         )
     }
 }
-
-expect fun nowMs(): Long

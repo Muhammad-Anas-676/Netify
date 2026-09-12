@@ -6,11 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.netpulse.shared.NetworkInfoProvider
-import com.netpulse.shared.SpeedResult
-import com.netpulse.shared.SpeedTestEngine
+import com.netpulse.android.core.NetworkInfoProvider
+import com.netpulse.android.core.NetworkSnapshot
+import com.netpulse.android.core.SpeedResult
+import com.netpulse.android.core.SpeedTestEngine
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import kotlinx.coroutines.launch
@@ -39,7 +41,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SpeedScreen(
     onRunTest: suspend () -> SpeedResult?,
-    onReadNetwork: () -> com.netpulse.shared.NetworkSnapshot
+    onReadNetwork: () -> NetworkSnapshot
 ) {
     val scope = rememberCoroutineScope()
     var result by remember { mutableStateOf<SpeedResult?>(null) }
@@ -73,7 +75,7 @@ fun SpeedScreen(
                     if (run != null) {
                         result = run
                         status = "Done — ↓ ${"%.1f".format(run.downloadMbps)} · ↑ ${"%.1f".format(run.uploadMbps)} Mbps · ${run.pingMs.toInt()} ms"
-                        // TODO: persist `run` into the Room-backed HistoryRepository (shared module)
+                        // TODO: persist `run` into a Room-backed history store
                     } else {
                         status = "Test failed — check your connection"
                     }

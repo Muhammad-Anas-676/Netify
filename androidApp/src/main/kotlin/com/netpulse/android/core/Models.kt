@@ -1,4 +1,4 @@
-package com.netpulse.shared
+package com.netpulse.android.core
 
 /** One completed speed test run. */
 data class SpeedResult(
@@ -23,12 +23,12 @@ sealed class HistoryEntry {
     ) : HistoryEntry()
 }
 
-/** Snapshot of the current connection, filled in differently per platform. */
+/** Snapshot of the current connection. */
 data class NetworkSnapshot(
     val isOnline: Boolean,
-    val ssid: String?,           // null on iOS — see NetworkInfoProvider docs
+    val ssid: String?,
     val signalStrengthDbm: Int?,
-    val isSecured: Boolean?,     // used to power the open-network warning
+    val isSecured: Boolean?,
     val ipAddress: String?
 )
 
@@ -36,5 +36,5 @@ data class NetworkSnapshot(
 data class IspPlan(
     val promisedDownloadMbps: Double,
     val promisedUploadMbps: Double,
-    val alertThresholdPercent: Int = 70 // alert if actual < 70% of promised
+    val alertThresholdPercent: Int = 70
 )
