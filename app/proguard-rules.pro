@@ -1,0 +1,5 @@
+-keep class com.netify.app.data.local.** { *; }
+-keepattributes *Annotation*
+-dontwarn org.bouncycastle.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**

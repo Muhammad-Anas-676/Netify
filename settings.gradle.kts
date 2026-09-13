@@ -1,18 +1,16 @@
-rootProject.name = "NetPulse"
-
 pluginManagement {
     repositories {
         google()
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
-
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
     }
 }
-
-include(":androidApp")
+rootProject.name = "Netify"
+include(":app")

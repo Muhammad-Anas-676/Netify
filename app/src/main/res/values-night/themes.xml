@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.Netify" parent="android:Theme.Material.NoActionBar" />
+</resources>
