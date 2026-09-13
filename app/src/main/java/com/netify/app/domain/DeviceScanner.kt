@@ -51,7 +51,7 @@ class DeviceScanner {
     fun getLocalIpFallback(): String? = runCatching {
         NetworkInterface.getNetworkInterfaces().toList()
             .flatMap { it.inetAddresses.toList() }
-            .firstOrNull { !it.isLoopback && it.hostAddress?.contains(":") == false }
+            .firstOrNull { !it.isLoopbackAddress && it.hostAddress?.contains(":") == false }
             ?.hostAddress
     }.getOrNull()
 }

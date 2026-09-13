@@ -33,7 +33,7 @@ import com.netify.app.domain.QrHelper
  * credentials on Android 10+ (the OS shows a one-time system connect
  * prompt to the user, by design).
  */
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun QrScanScreen(container: AppContainer, onDone: () -> Unit) {
     val context = LocalContext.current
